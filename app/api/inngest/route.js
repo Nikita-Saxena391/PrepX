@@ -1,4 +1,4 @@
-import { generateIndustryInsights } from "@/lib/inngest/functions";
+import { generateIndustryInsights } from "@/lib/inngest/function";
 import { inngest } from "@/lib/inngest/client";
 import { serve } from "inngest/next";
 

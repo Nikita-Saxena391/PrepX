@@ -6,7 +6,10 @@ import {
   FileText,
   GraduationCap,
   ChevronDown,
-  StarsIcon,Route,
+  StarsIcon,
+  Route,
+  Video,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
@@ -25,43 +28,32 @@ export default async function Header() {
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-      <Link href="/" className="flex items-center space-x-3">
-  <Image
-    src="/logo4.png"
-    alt="PrepX Logo"
-    width={200}
-    height={60}
-    className="h-12 w-auto object-contain"
-  />
-  <span className="text-4xl font-extrabold tracking-wide bg-gradient-to-r from-blue-500 to-red-500 text-transparent bg-clip-text">
-    PrepX
-  </span>
-</Link>
+        {/* Logo */}
+        <Link href="/" className="flex items-center space-x-3">
+          <Image
+            src="/logo4.png"
+            alt="PrepX Logo"
+            width={200}
+            height={60}
+            className="h-12 w-auto object-contain"
+          />
+          <span className="text-4xl font-extrabold tracking-wide bg-gradient-to-r from-blue-500 to-red-500 text-transparent bg-clip-text">
+            PrepX
+          </span>
+        </Link>
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2 md:space-x-4">
           <SignedIn>
+            {/* Dashboard Button */}
             <Link href="/dashboard">
-          <Button
-  className="
-    inline-flex items-center justify-center
-    px-5 py-2.5 rounded-xl font-semibold
-    bg-gradient-to-r from-red-600 to-pink-600
-    text-white shadow-lg shadow-red-500/30
-    hover:from-red-500 hover:to-pink-500
-    hover:shadow-red-500/45
-    active:scale-[0.97]
-    transition-all duration-200
-    focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2
-    ml-2
-  "
->
-  <LayoutDashboard className="h-4 w-4 mr-2" />
-  Industry Analytics
-</Button>
+              <Button className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-500/30 hover:from-red-500 hover:to-pink-500 hover:shadow-red-500/45 active:scale-[0.97] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 ml-2">
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Industry Analytics
+              </Button>
             </Link>
 
-            {/* Growth Tools Dropdown */}
+            {/* Career Toolkit Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="flex items-center gap-2">
@@ -70,43 +62,54 @@ export default async function Header() {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56"> {/* increased width from w-48 to w-56 */}
-  <DropdownMenuItem asChild>
-    <Link href="/resume" className="flex items-center gap-2">
-      <FileText className="h-4 w-4" />
-      Build Resume
-    </Link>
-  </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/resume" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Build Resume
+                  </Link>
+                </DropdownMenuItem>
 
-  <DropdownMenuItem asChild>
-    <Link href="/ai-cover-letter" className="flex items-center gap-2">
-      <PenBox className="h-4 w-4" />
-      Cover Letter
-    </Link>
-  </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/ai-cover-letter" className="flex items-center gap-2">
+                    <PenBox className="h-4 w-4" />
+                    Cover Letter
+                  </Link>
+                </DropdownMenuItem>
 
-  <DropdownMenuItem asChild>
-    <Link href="/interview" className="flex items-center gap-2">
-      <GraduationCap className="h-4 w-4" />
-      MCQ Practice
-    </Link>
-  </DropdownMenuItem>
+                {/* <DropdownMenuItem asChild>
+                  <Link href="/interview" className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" />
+                    MCQ Practice
+                  </Link>
+                </DropdownMenuItem> */}
 
-  <DropdownMenuItem asChild>
-    <Link href="/ai-career-dashboard" className="flex items-center gap-2">
-      <StarsIcon className="h-4 w-4" />
-      AI Career Coach
-    </Link>
-  </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/ai-chat-dashboard" className="flex items-center gap-2">
+                    <StarsIcon className="h-4 w-4" />
+                    AI Career Coach
+                  </Link>
+                </DropdownMenuItem>
 
-  <DropdownMenuItem asChild>
-    <Link href="/ai-roadmap" className="flex items-center gap-2">
-      <Route className="h-4 w-4" />
-      AI Roadmap Generator
-    </Link>
-  </DropdownMenuItem>
-</DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                <Link href="/ai-roadmap-generator" className="flex items-center gap-2">
+                    <Route className="h-4 w-4" />
+                    AI Roadmap Generator
+                  </Link>
+                </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+  <Link href="/tools/ai-assessments" className="flex items-center gap-2">
+    <Users className="h-4 w-4" />
+    MCQ Practice
+  </Link>
+</DropdownMenuItem>
+
+              </DropdownMenuContent>
             </DropdownMenu>
+          
+            {/* Start Interview Button (direct link, no dropdown) */}
+            {/* Start Interview Button */}
+
           </SignedIn>
 
           <SignedOut>

@@ -3,27 +3,43 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const USER_ID = "defaultUser"; // Replace with real user ID if you have auth
+
 export default function ChatHistoryPage() {
   const [history, setHistory] = useState([]);
 
-  // Load from localStorage
+  // Load chat from Redis API
   useEffect(() => {
-    const savedMessages = localStorage.getItem("chatHistory");
-    if (savedMessages) setHistory(JSON.parse(savedMessages));
+    fetch(`/api/get-chat?userId=${USER_ID}`)
+      .then((res) => res.json())
+      .then((data) => setHistory(data.messages || []))
+      .catch(console.error);
   }, []);
 
-  // Clear history
-  const clearHistory = () => {
-    localStorage.removeItem("chatHistory");
-    setHistory([]);
+  // Clear chat
+  const clearHistory = async () => {
+    try {
+      await fetch("/api/save-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: USER_ID, messages: [] }),
+      });
+      setHistory([]);
+    } catch (err) {
+      console.error("Failed to clear chat:", err);
+    }
   };
 
   return (
-    <div className="min-h-screen pt-24 p-6 bg-background"> {/* pt-24 to avoid header overlap */}
-      {/* Back to Dashboard Button */}
+    <div className="min-h-screen pt-24 p-6 bg-background">
+
+      {/* Back Button */}
       <div className="mb-6">
         <Link href="/ai-career-dashboard">
-          <button className="px-4 py-2 rounded-xl bg-gray-700 text-white hover:bg-gray-600 transition">
+          <button
+            type="button"
+            className="px-4 py-2 rounded-xl bg-gray-700 text-white hover:bg-gray-600 transition"
+          >
             ← Back to Dashboard
           </button>
         </Link>
@@ -57,6 +73,7 @@ export default function ChatHistoryPage() {
       {history.length > 0 && (
         <div className="flex justify-center mt-6">
           <button
+            type="button"
             onClick={clearHistory}
             className="px-6 py-2 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-500 transition"
           >

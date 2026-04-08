@@ -2,111 +2,220 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
+import { cacheKeys } from "../lib/redis/keys";
+import { TTL } from "../lib/redis/ttl";
+import { withCache, deleteKey } from "../lib/redis/cache";
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-export async function generateQuiz() {
+// ------------------ GENERATE QUIZ ------------------
+export async function generateQuiz(type, subject) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    select: {
-      industry: true,
-      skills: true,
-    },
-  });
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found in DB");
 
-  if (!user) throw new Error("User not found");
+  let prompt = "";
 
-  const prompt = `
-    Generate 10 technical interview questions for a ${
-      user.industry
-    } professional${
-    user.skills?.length ? ` with expertise in ${user.skills.join(", ")}` : ""
-  }.
-    
-    Each question should be multiple choice with 4 options.
-    
-    Return the response in this JSON format only, no additional text:
+  if (type === "technical") {
+    prompt = `
+You are an expert technical interviewer.
+
+Generate 10 technical interview questions for a ${user.industry} professional${
+      user.skills?.length ? ` with expertise in ${user.skills.join(", ")}` : ""
+    }.
+
+Rules:
+- Medium to hard difficulty
+- Each question must be multiple-choice
+- Exactly 4 options, 1 correct answer
+- Include "topic" and "explanation" fields
+
+Return ONLY valid JSON:
+{
+  "questions":[
     {
-      "questions": [
-        {
-          "question": "string",
-          "options": ["string", "string", "string", "string"],
-          "correctAnswer": "string",
-          "explanation": "string"
-        }
-      ]
+      "question":"string",
+      "options":["string","string","string","string"],
+      "correctAnswer":"string",
+      "explanation":"string",
+      "topic":"string"
     }
-  `;
+  ]
+}
+`;
+  } else if (type === "aptitude") {
+    prompt = `
+You are an expert campus placement test designer.
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-    const quiz = JSON.parse(cleanedText);
+Generate 10 multiple choice aptitude questions for the subject: ${subject}.
 
-    return quiz.questions;
-  } catch (error) {
-    console.error("Error generating quiz:", error);
-    throw new Error("Failed to generate quiz questions");
+Rules:
+- 4 options, 1 correct answer
+- Include "topic" and "explanation" fields
+- Placement level difficulty
+
+Return ONLY valid JSON:
+{
+  "questions":[
+    {
+      "question":"string",
+      "options":["string","string","string","string"],
+      "correctAnswer":"string",
+      "explanation":"string",
+      "topic":"string"
+    }
+  ]
+}
+`;
+  } else if (type === "core") {
+    prompt = `
+You are a CS interviewer.
+
+Generate 10 multiple-choice questions for ${subject}.
+
+Rules:
+- Medium to hard difficulty
+- 4 options, 1 correct answer
+- Include "topic" and "explanation" fields
+
+Return ONLY valid JSON:
+{
+  "questions":[
+    {
+      "question":"string",
+      "options":["string","string","string","string"],
+      "correctAnswer":"string",
+      "explanation":"string",
+      "topic":"string"
+    }
+  ]
+}
+`;
   }
+
+  const extractJsonObject = (raw) => {
+    const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) {
+      throw new Error("No valid JSON object found in model response");
+    }
+    return cleaned.slice(start, end + 1);
+  };
+
+  const maxAttempts = 5;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert technical interviewer who creates high-quality placement questions. Always return strict JSON."
+          },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 4000,
+        response_format: { type: "json_object" }
+      });
+
+      const text = response.choices[0]?.message?.content;
+      const finishReason = response.choices[0]?.finish_reason;
+
+      if (!text) throw new Error("Empty response from Groq");
+      if (finishReason === "length") continue; // retry if truncated
+
+      const jsonString = extractJsonObject(text);
+      const parsed = JSON.parse(jsonString);
+
+      if (!parsed || !Array.isArray(parsed.questions))
+        throw new Error("Invalid quiz schema: questions array missing");
+      if (parsed.questions.length !== 10)
+        throw new Error(
+          `Invalid question count: expected 10, got ${parsed.questions.length}`
+        );
+
+      for (const q of parsed.questions) {
+        if (
+          !q?.question ||
+          !Array.isArray(q?.options) ||
+          q.options.length !== 4 ||
+          !q?.correctAnswer ||
+          !q?.topic
+        ) {
+          throw new Error("Invalid question structure in model response");
+        }
+      }
+
+      return parsed.questions;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        console.error("Error generating quiz:", error);
+        throw new Error("Failed to generate quiz questions");
+      }
+    }
+  }
+  throw new Error("Failed to generate quiz questions");
 }
 
-export async function saveQuizResult(questions, answers, score) {
+// ------------------ SAVE QUIZ RESULT ------------------
+export async function saveQuizResult(questions, answers, score, type, subject) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found in DB");
 
-  if (!user) throw new Error("User not found");
-
-  const questionResults = questions.map((q, index) => ({
+  const questionResults = questions.map((q, i) => ({
     question: q.question,
+    topic: q.topic,
     answer: q.correctAnswer,
-    userAnswer: answers[index],
-    isCorrect: q.correctAnswer === answers[index],
-    explanation: q.explanation,
+    userAnswer: answers[i] ?? "",
+    isCorrect: q.correctAnswer === answers[i],
+    explanation: q.explanation
   }));
 
-  // Get wrong answers
-  const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
+  const weakTopics = [
+    ...new Set(questionResults.filter((q) => !q.isCorrect).map((q) => q.topic))
+  ];
 
-  // Only generate improvement tips if there are wrong answers
+  const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
   let improvementTip = null;
+
   if (wrongAnswers.length > 0) {
-    const wrongQuestionsText = wrongAnswers
+    const wrongText = wrongAnswers
       .map(
         (q) =>
-          `Question: "${q.question}"\nCorrect Answer: "${q.answer}"\nUser Answer: "${q.userAnswer}"`
+          `Question: ${q.question}\nCorrect: ${q.answer}\nUser: ${q.userAnswer}`
       )
-      .join("\n\n");
+      .join("\n");
 
     const improvementPrompt = `
-      The user got the following ${user.industry} technical interview questions wrong:
+The user completed an assessment on ${subject} (${type}).
 
-      ${wrongQuestionsText}
+Here are the questions they answered incorrectly:
+${wrongText}
 
-      Based on these mistakes, provide a concise, specific improvement tip.
-      Focus on the knowledge gaps revealed by these wrong answers.
-      Keep the response under 2 sentences and make it encouraging.
-      Don't explicitly mention the mistakes, instead focus on what to learn/practice.
-    `;
+Identify the knowledge gaps and suggest improvements (encouraging, 2 sentences max)
+`;
 
     try {
-      const tipResult = await model.generateContent(improvementPrompt);
+      const tipResponse = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+          { role: "system", content: "You are a supportive mentor." },
+          { role: "user", content: improvementPrompt }
+        ],
+        temperature: 0.6
+      });
 
-      improvementTip = tipResult.response.text().trim();
-      console.log(improvementTip);
-    } catch (error) {
-      console.error("Error generating improvement tip:", error);
-      // Continue without improvement tip if generation fails
+      improvementTip = tipResponse.choices[0]?.message?.content?.trim() ?? null;
+    } catch (err) {
+      console.error("Error generating improvement tip:", err);
     }
   }
 
@@ -114,43 +223,81 @@ export async function saveQuizResult(questions, answers, score) {
     const assessment = await db.assessment.create({
       data: {
         userId: user.id,
+        type,
+        subject,
         quizScore: score,
+        totalQuestions: questions.length,
         questions: questionResults,
-        category: "Technical",
-        improvementTip,
-      },
+        weakTopics,
+        improvementTip
+      }
     });
 
+    const key = cacheKeys.assessmentsByUser(user.id);
+    await deleteKey(key);
+
     return assessment;
-  } catch (error) {
-    console.error("Error saving quiz result:", error);
+  } catch (err) {
+    console.error("Error saving quiz result:", err);
     throw new Error("Failed to save quiz result");
   }
 }
 
+// ------------------ GET ASSESSMENTS ------------------
 export async function getAssessments() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found in DB");
+
+  const key = cacheKeys.assessmentsByUser(user.id);
+
+  const { data } = await withCache(
+    key,
+    async () =>
+      db.assessment.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "asc" }
+      }),
+    TTL.ASSESSMENTS_SECONDS
+  );
+
+  return data;
+}
+
+// ------------------ CLEAR ASSESSMENTS ------------------
+export async function clearAssessments() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found in DB");
+
+  await db.assessment.deleteMany({ where: { userId: user.id } });
+  const key = cacheKeys.assessmentsByUser(user.id);
+  await deleteKey(key);
+}
+
+// ------------------ COUNT ASSESSMENTS ------------------
+export async function countAssessments() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found in DB");
+
+  const counts = await db.assessment.groupBy({
+    by: ["type"],
+    where: { userId: user.id },
+    _count: { type: true }
   });
 
-  if (!user) throw new Error("User not found");
+  const result = { aptitude: 0, technical: 0, core: 0 };
+  counts.forEach((c) => {
+    const t = c.type?.toLowerCase();
+    if (result[t] !== undefined) result[t] = c._count.type;
+  });
 
-  try {
-    const assessments = await db.assessment.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-
-    return assessments;
-  } catch (error) {
-    console.error("Error fetching assessments:", error);
-    throw new Error("Failed to fetch assessments");
-  }
+  return result;
 }

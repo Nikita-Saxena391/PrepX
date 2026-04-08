@@ -153,7 +153,7 @@ export default function ResumeBuilder({ initialContent }) {
     <div data-color-mode="light" className="space-y-4">
      <div className="text-center space-y-2 mb-6">
   
-<div className="relative mb-6 px-6 md:px-10 lg:px-20 pt-24 flex items-center">
+<div className="relative mb-4 px-6 md:px-10 lg:px-20 pt-4 flex items-center">
   {/* Back button on left */}
   <Link href="/">
     <button

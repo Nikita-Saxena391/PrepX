@@ -45,7 +45,7 @@ const Page = async () => {
 
   return (
   <div className="min-h-screen pt-28 px-15 text-white">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <Link href={"/"}>
           <Button variant="link" className="gap-2 pl-0 cursor-pointer">
             <ArrowLeft className="h-4 w-4" />
@@ -53,11 +53,11 @@ const Page = async () => {
           </Button>
         </Link>
 
-       <h1 className="text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent mt-5 text-center mb-5">
+       <h1 className="text-3xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent mt-5 text-center mb-5">
   PRACTICE ASSESSMENTS
 </h1>
         <Link href={"/tools/ai-assessments/history"}>
-          <span className="font-bold bg-blue-500 hover:bg-blue-700 hover:scale-105 transition cursor-pointer rounded-lg text-white w-contain p-4">
+          <span className="font-bold bg-blue-500 hover:bg-blue-700 transition cursor-pointer rounded-lg text-white px-4 py-2 text-center w-full md:w-auto">
             My Assessment History
           </span>
         </Link>
@@ -65,7 +65,7 @@ const Page = async () => {
 
       {/* Greeting */}
       <div className="text-center mb-10">
-        <h1 className="text-3xl font-semibold">
+        <h1 className="text-lg md:text-3xl font-semibold text-center px-2">
           Hi <span className="text-yellow-500">{user.name}</span>! Ready to test
           your preparation?
         </h1>
@@ -105,7 +105,7 @@ const Page = async () => {
         This assessment contains questions related to the skills you mentioned
         while completing your profile.
       </p>
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <Card title="Technical Assessment" questions={10} type="technical" />
       </div>
     </div>

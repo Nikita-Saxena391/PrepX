@@ -66,11 +66,16 @@ export default function Header() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <StarsIcon className="h-4 w-4" />
-                  Career Toolkit
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
+                <Button
+  onClick={() => setToolkitOpen(!toolkitOpen)}
+  className="w-full flex items-center justify-between"
+>
+  <span className="flex items-center gap-2">
+    <StarsIcon className="h-4 w-4" />
+    Career Toolkit
+  </span>
+  {toolkitOpen ? <ChevronUp /> : <ChevronDown />}
+</Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">

@@ -65,7 +65,7 @@ const Page = async () => {
 <h1 className="text-3xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent text-center mb-6">
   PRACTICE ASSESSMENTS
 </h1>
-      </div>
+      
 
       {/* Greeting */}
       <div className="text-center mb-10">

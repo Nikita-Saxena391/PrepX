@@ -397,51 +397,77 @@ ai-career-coach/
 
 ---
 
-## 10. Installation
+## ⚙️ Installation
 
+```bash
+# Clone the repository
 git clone <your-repository-url>
-cd prepx
+
+# Navigate into the project
+cd ai-career-coach
+
+# Install dependencies
 npm install
+```
 
 ---
 
-## 11. Running the Project
+## 🚀 Running the Project
 
+```bash
+# Start development server
 npm run dev
 
+# Build for production
 npm run build
-npm run start
 
-npx inngest-cli@latest dev
+# Start production server
+npm run start
+```
 
 ---
 
-## 12. Environment Variables
+## ⏱️ Running Background Jobs (Inngest)
 
-Required configuration:
+```bash
+# Start Inngest dev server
+npx inngest-cli@latest dev
+```
 
+---
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the root directory and add:
+
+```bash
+# Database
 DATABASE_URL=
 
+# Authentication (Clerk)
 CLERK_SECRET_KEY=
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
+# OAuth Providers
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 
+# AI Services
 GROQ_API_KEY=
 GEMINI_API_KEY=
 
+# Redis (Upstash)
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-PINECONE_API_KEY= (if semantic memory is enabled)
+# Vector DB (optional)
+PINECONE_API_KEY=
 
+# App Config
 NEXT_PUBLIC_APP_URL=
-
----
-
+```
 ## 13. Performance Optimizations
 
 - Redis cache-aside strategy for frequently accessed data

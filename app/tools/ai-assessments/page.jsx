@@ -45,24 +45,26 @@ const Page = async () => {
 
   return (
   <div className="min-h-screen pt-28 px-4 md:px-10 text-white">
-    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <Link href={"/"}>
-          <Button variant="link" className="gap-2 pl-0 cursor-pointer">
-            <ArrowLeft className="h-4 w-4" />
-            Back to DashBoard
-          </Button>
-        </Link>
+   {/* Top row */}
+<div className="flex justify-between items-center mb-6">
+  <Link href={"/"}>
+    <Button variant="link" className="gap-2 pl-0 cursor-pointer">
+      <ArrowLeft className="h-4 w-4" />
+      Back to DashBoard
+    </Button>
+  </Link>
 
-       <h1 className="text-3xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent mt-5 text-center mb-5">
-  PRACTICE ASSESSMENTS
-</h1>
-      <div className="w-full flex justify-end mb-6">
   <Link href={"/tools/ai-assessments/history"}>
     <span className="font-bold bg-blue-500 hover:bg-blue-700 transition cursor-pointer rounded-lg text-white px-4 py-2">
       My Assessment History
     </span>
   </Link>
 </div>
+
+{/* Center Heading */}
+<h1 className="text-3xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent text-center mb-6">
+  PRACTICE ASSESSMENTS
+</h1>
       </div>
 
       {/* Greeting */}
@@ -71,8 +73,8 @@ const Page = async () => {
           Hi <span className="text-yellow-500">{user.name}</span>! Ready to test
           your preparation?
         </h1>
+      
       </div>
-
       {/* Aptitude */}
       <h2 className="text-2xl font-semibold mb-4 text-amber-600">Aptitude</h2>
       <div className="grid md:grid-cols-3 gap-8 mb-10">
@@ -111,6 +113,7 @@ const Page = async () => {
         <Card title="Technical Assessment" questions={10} type="technical" />
       </div>
     </div>
+      
   );
 };
 

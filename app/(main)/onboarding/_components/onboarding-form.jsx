@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,6 @@ const OnboardingForm = ({ industries }) => {
   const {
     loading: updateLoading,
     fn: updateUserFn,
-    data: updateResult,
   } = useFetch(updateUser);
 
   const {
@@ -56,22 +55,27 @@ const OnboardingForm = ({ industries }) => {
         .toLowerCase()
         .replace(/ /g, "-")}`;
 
-      await updateUserFn({
+      const res = await updateUserFn({
         ...values,
         industry: formattedIndustry,
       });
+
+      console.log("UPDATE RESPONSE:", res);
+
+      // ✅ FIXED LOGIC
+      if (res?.updatedUser) {
+        toast.success("Profile completed successfully!");
+        router.push("/dashboard");
+        router.refresh();
+      } else {
+        toast.error("Update failed");
+      }
+
     } catch (error) {
       console.error("Onboarding error:", error);
+      toast.error("Something went wrong");
     }
   };
-
-  useEffect(() => {
-    if (updateResult?.success && !updateLoading) {
-      toast.success("Profile completed successfully!");
-      router.push("/dashboard");
-      router.refresh();
-    }
-  }, [updateResult, updateLoading]);
 
   const watchIndustry = watch("industry");
 
@@ -87,8 +91,11 @@ const OnboardingForm = ({ industries }) => {
             recommendations.
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+            {/* Industry */}
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Select
@@ -114,6 +121,7 @@ const OnboardingForm = ({ industries }) => {
                   </SelectGroup>
                 </SelectContent>
               </Select>
+
               {errors.industry && (
                 <p className="text-sm text-red-500">
                   {errors.industry.message}
@@ -121,12 +129,11 @@ const OnboardingForm = ({ industries }) => {
               )}
             </div>
 
+            {/* SubIndustry */}
             {watchIndustry && (
               <div className="space-y-2">
                 <Label htmlFor="subIndustry">Specialization</Label>
-                <Select
-                  onValueChange={(value) => setValue("subIndustry", value)}
-                >
+                <Select onValueChange={(value) => setValue("subIndustry", value)}>
                   <SelectTrigger id="subIndustry">
                     <SelectValue placeholder="Select your specialization" />
                   </SelectTrigger>
@@ -141,6 +148,7 @@ const OnboardingForm = ({ industries }) => {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+
                 {errors.subIndustry && (
                   <p className="text-sm text-red-500">
                     {errors.subIndustry.message}
@@ -149,6 +157,7 @@ const OnboardingForm = ({ industries }) => {
               </div>
             )}
 
+            {/* Experience */}
             <div className="space-y-2">
               <Label htmlFor="experience">Years of Experience</Label>
               <Input
@@ -159,6 +168,7 @@ const OnboardingForm = ({ industries }) => {
                 placeholder="Enter years of experience"
                 {...register("experience")}
               />
+
               {errors.experience && (
                 <p className="text-sm text-red-500">
                   {errors.experience.message}
@@ -166,6 +176,7 @@ const OnboardingForm = ({ industries }) => {
               )}
             </div>
 
+            {/* Skills */}
             <div className="space-y-2">
               <Label htmlFor="skills">Skills</Label>
               <Input
@@ -176,11 +187,15 @@ const OnboardingForm = ({ industries }) => {
               <p className="text-sm text-muted-foreground">
                 Separate multiple skills with commas
               </p>
+
               {errors.skills && (
-                <p className="text-sm text-red-500">{errors.skills.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.skills.message}
+                </p>
               )}
             </div>
 
+            {/* Bio */}
             <div className="space-y-2">
               <Label htmlFor="bio">Professional Bio</Label>
               <Textarea
@@ -189,11 +204,15 @@ const OnboardingForm = ({ industries }) => {
                 className="h-32"
                 {...register("bio")}
               />
+
               {errors.bio && (
-                <p className="text-sm text-red-500">{errors.bio.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.bio.message}
+                </p>
               )}
             </div>
 
+            {/* Button */}
             <Button type="submit" className="w-full" disabled={updateLoading}>
               {updateLoading ? (
                 <>
@@ -204,6 +223,7 @@ const OnboardingForm = ({ industries }) => {
                 "Complete Profile"
               )}
             </Button>
+
           </form>
         </CardContent>
       </Card>

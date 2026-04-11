@@ -167,6 +167,7 @@ style K fill:#b45309,color:#fff
 
 ---
 ## Backend Component View
+
 ```mermaid
 flowchart LR
 
@@ -200,7 +201,6 @@ end
 %% ========== CONNECTIONS ==========
 A --> E
 B --> F
-C --> E
 
 D --> G
 
@@ -217,7 +217,6 @@ L --> A
 %% ========== STYLING ==========
 style A fill:#ea580c,color:#fff
 style B fill:#f97316,color:#fff
-style C fill:#fb923c,color:#fff
 style D fill:#0ea5e9,color:#fff
 
 style E fill:#7c3aed,color:#fff

@@ -1,33 +1,43 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
 export async function updateUser(data) {
   const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
 
-  if (!userId) {
-    return { success: false, error: "Unauthorized" };
+  // ✅ Ensure user exists (fixes your crash)
+  let user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
+  if (!user) {
+    const clerk = await currentUser();
+
+    user = await db.user.create({
+      data: {
+        clerkUserId: userId,
+        name: `${clerk?.firstName ?? ""} ${clerk?.lastName ?? ""}`.trim(),
+        imageUrl: clerk?.imageUrl,
+        email: clerk?.emailAddresses?.[0]?.emailAddress,
+      },
+    });
   }
 
   try {
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    // ✅ DO NOT CRASH APP FOR NEW USERS
-    if (!user) {
-      return { success: false, error: "User not found in DB" };
-    }
-
     const result = await db.$transaction(
       async (tx) => {
+        // 1. Check industry insight
         let industryInsight = await tx.industryInsight.findUnique({
-          where: { industry: data.industry },
+          where: {
+            industry: data.industry,
+          },
         });
 
+        // 2. Generate if missing
         if (!industryInsight) {
           const insights = await generateAIInsights(data.industry);
 
@@ -35,13 +45,18 @@ export async function updateUser(data) {
             data: {
               industry: data.industry,
               ...insights,
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              nextUpdate: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ),
             },
           });
         }
 
+        // 3. Update user
         const updatedUser = await tx.user.update({
-          where: { id: user.id },
+          where: {
+            id: user.id,
+          },
           data: {
             industry: data.industry,
             experience: data.experience,
@@ -58,45 +73,23 @@ export async function updateUser(data) {
     );
 
     revalidatePath("/");
-
-    // ✅ FIXED RETURN (IMPORTANT)
-    return {
-  success: true,
-  updatedUser: result.updatedUser,
-};
+    return result.updatedUser; // ✅ FIXED (was result.user ❌)
   } catch (error) {
-    console.error("Error updating user and industry:", error);
-
-    return {
-      success: false,
-      error: "Failed to update profile",
-    };
+    console.error("Error updating user and industry:", error.message);
+    throw new Error("Failed to update profile");
   }
 }
 
 export async function getUserOnboardingStatus() {
   const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
 
-  if (!userId) {
-    return { isOnboarded: false };
-  }
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+    select: { industry: true },
+  });
 
-  try {
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-      select: {
-        industry: true,
-      },
-    });
-
-    return {
-      isOnboarded: !!user?.industry,
-    };
-  } catch (error) {
-    console.error("Error checking onboarding status:", error);
-
-    return {
-      isOnboarded: false,
-    };
-  }
+  return {
+    isOnboarded: !!user?.industry,
+  };
 }

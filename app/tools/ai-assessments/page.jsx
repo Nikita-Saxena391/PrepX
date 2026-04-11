@@ -46,7 +46,7 @@ const Page = async () => {
   return (
   <div className="min-h-screen pt-28 px-4 md:px-10 text-white">
    {/* Top row */}
-<div className="flex justify-between items-center mb-6">
+<div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
   <Link href={"/"}>
     <Button variant="link" className="gap-2 pl-0 cursor-pointer">
       <ArrowLeft className="h-4 w-4" />
@@ -55,9 +55,9 @@ const Page = async () => {
   </Link>
 
   <Link href={"/tools/ai-assessments/history"}>
-    <span className="font-bold bg-blue-500 hover:bg-blue-700 transition cursor-pointer rounded-lg text-white px-4 py-2">
-      My Assessment History
-    </span>
+    <span className="w-full md:w-auto text-center font-bold bg-blue-500 hover:bg-blue-700 transition rounded-lg text-white px-4 py-2 block">
+    My Assessment History
+  </span>
   </Link>
 </div>
 

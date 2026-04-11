@@ -1,11 +1,13 @@
-import { redirect } from "next/navigation";
-import { industries } from "@/data/industries";
-import OnboardingForm from "./_components/onboarding-form";
-import { getUserOnboardingStatus } from "@/actions/user";
-
 export default async function OnboardingPage() {
-  // Check if user is already onboarded
-  const { isOnboarded } = await getUserOnboardingStatus();
+  let isOnboarded = false;
+
+  try {
+    const res = await getUserOnboardingStatus();
+    isOnboarded = res?.isOnboarded;
+  } catch (error) {
+    console.log("Onboarding status error:", error);
+    isOnboarded = false;
+  }
 
   if (isOnboarded) {
     redirect("/dashboard");

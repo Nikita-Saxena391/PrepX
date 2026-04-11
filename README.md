@@ -1,159 +1,277 @@
-# 🚀 PrepX
-
-### AI-Powered Interview Preparation Platform
-
-> *A unified AI-driven platform for interview preparation, resume building, assessments, and career growth.*
+# PrepX
+AI-powered interview preparation platform that unifies coaching chat, resume building, quiz assessment, industry insights, and AI learning roadmaps.
 
 ---
 
-## 🧠 Overview
+## 1. Project Title & Tagline
 
-**PrepX** is a full-stack AI-powered career preparation platform designed to help students and professionals prepare for technical interviews in one unified system.
-
-It combines:
-
-- AI Career Coaching  
-- Smart Resume Builder  
-- Quiz & Skill Assessment System  
-- AI Learning Roadmaps  
-- Industry Insights  
-
-No fragmented tools — everything in one place.
+PrepX: a full-stack AI career preparation suite built as a Next.js monolith.
 
 ---
 
-## ❗ Problem Statement
+## 2. Problem Statement
 
-Interview preparation is currently scattered across multiple platforms:
+Interview preparation is usually fragmented across multiple tools such as resume builders, question banks, mock interview platforms, and analytics dashboards. This leads to:
 
-- Separate tools for resumes, quizzes, and mock interviews  
-- No centralized progress tracking  
-- Lack of personalized feedback  
-- Static and non-adaptive learning resources  
+- Increased context switching
+- Lack of unified progress tracking
+- Weak feedback loops
+- Inconsistent preparation experience
 
-This leads to inefficient preparation and slow skill improvement.
+PrepX targets students and professionals preparing for technical careers by providing a single integrated platform for:
 
----
-
-## 💡 Solution
-
-**PrepX solves this by creating a unified AI-driven preparation ecosystem** that:
-
-- Tracks user progress  
-- Generates personalized learning content  
-- Provides real-time AI feedback  
-- Continuously adapts based on user performance  
+- Practice (AI quizzes)
+- Improvement (AI feedback and resume enhancement)
+- Direction (industry insights and learning roadmaps)
 
 ---
 
-## ✨ Features
+## 3. Solution
 
-### 🤖 AI Career Assistant
-- Chat-based AI mentor
-- Role-specific guidance (SDE, Data Analyst, etc.)
-- Context-aware responses using chat memory
+PrepX combines interactive frontend workflows with server actions and API routes backed by:
 
----
+- PostgreSQL (NeonDB) with Prisma
+- Redis for caching and session buffering
+- AI services (Groq, Gemini)
 
-### 📝 Smart Resume Builder
-- Build resumes inside the platform
-- AI-powered improvements:
-  - Bullet point optimization
-  - Project descriptions
-  - ATS-friendly formatting
+At a high level:
 
----
-
-### 🧪 Quiz & Assessment System
-- AI-generated quizzes
-- Topics:
-  - Data Structures & Algorithms
-  - Aptitude
-  - CS Fundamentals
-- Instant scoring + AI feedback
+- Users authenticate using Clerk (OAuth and email-based login)
+- AI pipelines generate quizzes, roadmaps, chat responses, and resume feedback
+- Redis is used for low-latency chat and caching
+- All persistent data is stored in PostgreSQL via Prisma
 
 ---
 
-### 📊 Industry Insights
-- Latest tech trends and skill demand analysis
-- Cached for fast performance
-- Updated using scheduled background jobs
+## 4. Key Features
+
+- AI career chat with streaming responses
+- Redis-backed live chat session buffering
+- AI resume builder with content enhancement and optimization
+- Technical quiz generation, evaluation, and feedback system
+- AI-generated learning roadmaps rendered as interactive graphs using React Flow
+- Industry insights system with Redis caching and scheduled refresh via Inngest
+- Structured AI pipelines for evaluation and content generation
 
 ---
 
-### 🗺️ AI Learning Roadmaps
-- Personalized career roadmap generator
-- Visual graph-based roadmap using React Flow
-- Learning progression:
-  - Basics → Intermediate → Advanced → Projects → Interview Prep
+## 5. Tech Stack
 
----
-
-
-
-## 🧰 Tech Stack
-
-### Frontend
+Frontend:
 - Next.js (App Router)
 - React
 - Tailwind CSS
 - Radix UI
 - React Flow
 
----
-
-### Backend
+Backend:
+- Next.js Server Actions
 - Next.js API Routes
-- Server Actions
 
----
-
-### Database
-- **NeonDB (PostgreSQL)**
+Database:
+- PostgreSQL (NeonDB)
 - Prisma ORM
 
-Used for:
-- Users
-- Resumes
-- Quizzes
-- Roadmaps
-- Progress tracking
-
----
-
-### Caching
+Caching:
 - Redis (Upstash)
-  - Chat sessions
-  - Insights caching
-  - Temporary AI state
 
----
-
-### AI Integration
+AI:
 - Groq (Llama models)
 - Google Gemini
 
-Used for:
-- Chat responses
-- Resume enhancement
-- Quiz generation
-- Roadmap generation
+Background Jobs:
+- Inngest (cron-based workflows for insights and updates)
+
+Authentication:
+- Clerk (Google, GitHub, email/password, session management)
 
 ---
 
-### Background Jobs
-- Inngest
-  - Weekly industry insights refresh
+## 6. System Architecture
+
+High-Level System
+
+Frontend (Next.js UI)
+    |
+API Layer (Server Actions / Route Handlers)
+    |
+AI Layer (Groq / Gemini)
+    |
+Data Layer:
+- NeonDB (PostgreSQL via Prisma)
+- Redis (cache + session storage)
 
 ---
 
-### Authentication
-- Clerk Auth
-  - Google login
-  - GitHub login
-  - Email/password login
-  - Session management
+## 7. Core Pipelines
+
+Chat Pipeline:
+
+- User sends message to chat endpoint
+- Message stored in Redis session buffer
+- Relevant context retrieved from cache
+- AI generates streaming response
+- Final response stored in PostgreSQL
 
 ---
 
-## 🏗️ Architecture
+Quiz Pipeline:
+
+- AI generates questions dynamically based on topic
+- User attempts quiz
+- AI evaluates responses
+- Score and feedback stored in database
+
+---
+
+Resume Pipeline:
+
+- User inputs or uploads resume data
+- AI enhances content (bullet points, summaries, formatting)
+- Versioned resume stored in PostgreSQL
+
+---
+
+Insights Pipeline:
+
+- Redis cache checked first
+- If cache miss, AI generates insights
+- Data stored and periodically refreshed via Inngest cron jobs
+
+---
+
+Roadmap Pipeline:
+
+- AI generates structured JSON roadmap
+- Stored in PostgreSQL
+- Rendered using React Flow graph visualization
+
+---
+
+## 8. Project Structure
+
+src/
+  app/
+    (auth)/
+    (marketing)/
+    (root)/
+    tools/
+    api/
+
+  actions/
+    server-side business logic
+
+  components/
+    reusable UI and feature components
+
+  lib/
+    AI clients, database helpers, cache utilities
+
+  constants/
+    schemas, config, mappings
+
+  hooks/
+    custom React hooks
+
+prisma/
+  schema.prisma
+  migrations/
+
+---
+
+## 9. How the System Works
+
+- User signs in using Clerk authentication
+- User profile is created and managed in PostgreSQL via Prisma
+- User accesses features like chat, quiz, resume builder, and roadmap generator
+- AI requests are processed via Groq or Gemini
+- Redis handles caching and live session state
+- Final data is persisted in PostgreSQL
+- Inngest handles scheduled background jobs for insights and updates
+
+---
+
+## 10. Installation
+
+git clone <your-repository-url>
+cd prepx
+npm install
+
+---
+
+## 11. Running the Project
+
+npm run dev
+
+npm run build
+npm run start
+
+npx inngest-cli@latest dev
+
+---
+
+## 12. Environment Variables
+
+Required configuration:
+
+DATABASE_URL=
+
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+GROQ_API_KEY=
+GEMINI_API_KEY=
+
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+PINECONE_API_KEY= (if semantic memory is enabled)
+
+NEXT_PUBLIC_APP_URL=
+
+---
+
+## 13. Performance Optimizations
+
+- Redis cache-aside strategy for frequently accessed data
+- Redis session buffering for real-time chat interactions
+- Streaming AI responses to reduce perceived latency
+- Prisma query optimization with indexed relational models
+- Global singleton pattern for Prisma client
+- Background job optimization using Inngest cron workflows
+
+---
+
+## 14. Performance Benchmarking & Latency Optimization
+
+PrepX uses Redis cache-aside architecture to reduce database load and improve response times.
+
+A benchmarking script compares:
+
+- Cold cache (PostgreSQL query)
+- Warm cache (Redis retrieval)
+
+Measured improvements:
+
+- Significant reduction in average response time on cached requests
+- Lower p95 latency for frequently accessed endpoints
+- Reduced database query overhead on repeated reads
+
+These improvements apply to backend data retrieval and not full UI rendering time.
+
+---
+
+## 15. License & Ownership
+
+Repository ownership: This project belongs to the developer.
+
+License status: No explicit license file is currently defined.
+
+All rights reserved unless a license is added in the repository.
+
+Third-party services and SDKs used in this project are governed by their respective licenses.

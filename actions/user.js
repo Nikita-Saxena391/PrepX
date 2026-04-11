@@ -61,9 +61,9 @@ export async function updateUser(data) {
 
     // ✅ FIXED RETURN (IMPORTANT)
     return {
-      success: true,
-      ...result,
-    };
+  success: true,
+  updatedUser: result.updatedUser,
+};
   } catch (error) {
     console.error("Error updating user and industry:", error);
 

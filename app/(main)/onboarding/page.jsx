@@ -4,9 +4,8 @@ export default async function OnboardingPage() {
   try {
     const res = await getUserOnboardingStatus();
     isOnboarded = res?.isOnboarded;
-  } catch (error) {
-    console.log("Onboarding status error:", error);
-    isOnboarded = false;
+  } catch (err) {
+    console.error("onboarding check failed:", err);
   }
 
   if (isOnboarded) {

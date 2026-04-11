@@ -91,15 +91,79 @@ Authentication:
 
 High-Level System
 
-Frontend (Next.js UI)
-    |
-API Layer (Server Actions / Route Handlers)
-    |
-AI Layer (Groq / Gemini)
-    |
-Data Layer:
-- NeonDB (PostgreSQL via Prisma)
-- Redis (cache + session storage)
+```mermaid
+flowchart LR
+
+%% ========== FRONTEND ==========
+subgraph Frontend
+A[User Browser]
+B[Next.js App Router]
+A --> B
+end
+
+%% ========== CORE ==========
+subgraph Core
+C[API Routes]
+D[Server Actions]
+B --> C
+B --> D
+end
+
+%% ========== AI SERVICES ==========
+subgraph AI_Services
+E[Groq]
+F[Gemini]
+end
+
+%% ========== DATA LAYER ==========
+subgraph Data_Layer
+G[(PostgreSQL / Prisma)]
+H[(Upstash Redis)]
+I[(Pinecone)]
+end
+
+%% ========== AUTH ==========
+subgraph Auth
+J[Clerk Auth]
+end
+
+%% ========== BACKGROUND ==========
+subgraph Background_Jobs
+K[Inngest Cron]
+end
+
+%% ========== CONNECTIONS ==========
+C --> H
+C --> I
+D --> G
+D --> H
+
+C --> E
+D --> F
+
+K --> G
+K --> E
+
+J --> B
+
+%% ========== STYLING ==========
+style A fill:#1e3a8a,color:#fff
+style B fill:#2563eb,color:#fff
+
+style C fill:#7c3aed,color:#fff
+style D fill:#6d28d9,color:#fff
+
+style E fill:#ea580c,color:#fff
+style F fill:#f97316,color:#fff
+
+style G fill:#059669,color:#fff
+style H fill:#16a34a,color:#fff
+style I fill:#10b981,color:#fff
+
+style J fill:#0ea5e9,color:#fff
+
+style K fill:#b45309,color:#fff
+```
 
 ---
 

@@ -174,7 +174,6 @@ flowchart LR
 subgraph Integrations
 A[Groq]
 B[Gemini]
-C[VAPI]
 D[Clerk Auth]
 end
 

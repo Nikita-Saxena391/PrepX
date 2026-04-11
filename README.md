@@ -353,36 +353,37 @@ Roadmap Pipeline:
 
 ---
 
-## 8. Project Structure
+## 📁 Project Structure
 
-src/
-  app/
-    (auth)/
-    (marketing)/
-    (root)/
-    tools/
-    api/
+```bash
+ai-career-coach/
+├── src/
+│   ├── app/                # Next.js App Router (routes, pages, layouts)
+│   ├── components/         # Reusable UI components
+│   ├── actions/            # Server actions (business logic)
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utilities (DB, AI clients, Redis, helpers)
+│   ├── data/               # Static/mock data & configs
+│
+├── prisma/                 # Database schema & migrations
+│   ├── schema.prisma
+│   └── migrations/
+│
+├── public/                 # Static assets (images, icons)
+├── scripts/                # Utility scripts (seeding, benchmarks)
 
-  actions/
-    server-side business logic
+├── middleware.js           # Auth & request middleware
+├── next.config.mjs         # Next.js configuration
+├── tailwind.config.mjs     # Tailwind CSS config
+├── postcss.config.mjs      # PostCSS config
+├── eslint.config.mjs       # Linting rules
+├── jsconfig.json           # Path aliases & JS config
 
-  components/
-    reusable UI and feature components
+├── package.json            # Dependencies & scripts
+├── package-lock.json
 
-  lib/
-    AI clients, database helpers, cache utilities
-
-  constants/
-    schemas, config, mappings
-
-  hooks/
-    custom React hooks
-
-prisma/
-  schema.prisma
-  migrations/
-
----
+└── README.md
+```
 
 ## 9. How the System Works
 

@@ -7,52 +7,96 @@ import { generateAIInsights } from "./dashboard";
 
 export async function updateUser(data) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found in DB");
+  if (!userId) {
+    return { success: false, error: "Unauthorized" };
   }
 
   try {
-    const result = await db.$transaction(async (tx) => {
-      let industryInsight = await tx.industryInsight.findUnique({
-        where: { industry: data.industry },
-      });
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
 
-      if (!industryInsight) {
-        const insights = await generateAIInsights(data.industry);
+    // ✅ DO NOT CRASH APP FOR NEW USERS
+    if (!user) {
+      return { success: false, error: "User not found in DB" };
+    }
 
-        industryInsight = await tx.industryInsight.create({
+    const result = await db.$transaction(
+      async (tx) => {
+        let industryInsight = await tx.industryInsight.findUnique({
+          where: { industry: data.industry },
+        });
+
+        if (!industryInsight) {
+          const insights = await generateAIInsights(data.industry);
+
+          industryInsight = await tx.industryInsight.create({
+            data: {
+              industry: data.industry,
+              ...insights,
+              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+          });
+        }
+
+        const updatedUser = await tx.user.update({
+          where: { id: user.id },
           data: {
             industry: data.industry,
-            ...insights,
-            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            experience: data.experience,
+            bio: data.bio,
+            skills: data.skills,
           },
         });
+
+        return { updatedUser, industryInsight };
+      },
+      {
+        timeout: 40000,
       }
-
-      const updatedUser = await tx.user.update({
-        where: { id: user.id },
-        data: {
-          industry: data.industry,
-          experience: data.experience,
-          bio: data.bio,
-          skills: data.skills,
-        },
-      });
-
-      return { updatedUser, industryInsight };
-    });
+    );
 
     revalidatePath("/");
 
-    return result; // ✅ FIXED
+    // ✅ FIXED RETURN (IMPORTANT)
+    return {
+      success: true,
+      ...result,
+    };
   } catch (error) {
-    console.error("Error updating user:", error);
-    throw new Error("Failed to update profile");
+    console.error("Error updating user and industry:", error);
+
+    return {
+      success: false,
+      error: "Failed to update profile",
+    };
+  }
+}
+
+export async function getUserOnboardingStatus() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { isOnboarded: false };
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+      select: {
+        industry: true,
+      },
+    });
+
+    return {
+      isOnboarded: !!user?.industry,
+    };
+  } catch (error) {
+    console.error("Error checking onboarding status:", error);
+
+    return {
+      isOnboarded: false,
+    };
   }
 }

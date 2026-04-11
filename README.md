@@ -89,7 +89,7 @@ Authentication:
 
 ## 6. System Architecture
 
-High-Level System
+## High-Level System
 
 ```mermaid
 flowchart LR

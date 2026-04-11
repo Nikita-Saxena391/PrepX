@@ -153,23 +153,23 @@ export default function ResumeBuilder({ initialContent }) {
     <div data-color-mode="light" className="space-y-4">
      <div className="text-center space-y-2 mb-6">
   
-<div className="relative mb-4 px-6 md:px-10 lg:px-20 pt-4 flex items-center">
-  {/* Back button on left */}
-  <Link href="/">
-    <button
-      type="button"
-      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
-    >
-      <ArrowLeft className="h-4 w-4" />
-      Back to Home
-    </button>
-  </Link>
+<div className="mb-4 px-4 md:px-10 lg:px-20 pt-4">
+  
+  {/* Back Button */}
+  <div className="flex justify-start">
+    <Link href="/">
+      <button
+        type="button"
+        className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm md:text-base"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Home
+      </button>
+    </Link>
+  </div>
 
-  {/* Spacer to push heading to center */}
-  <div className="flex-1" />
-
-  {/* Centered heading */}
-  <h1 className="absolute left-1/2 transform -translate-x-1/2 font-bold gradient-title text-5xl md:text-6xl text-center">
+  {/* Heading */}
+  <h1 className="mt-4 font-bold gradient-title text-3xl md:text-6xl text-center">
     My Resume
   </h1>
 </div>

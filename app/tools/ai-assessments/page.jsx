@@ -56,11 +56,13 @@ const Page = async () => {
        <h1 className="text-3xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-300 bg-clip-text text-transparent mt-5 text-center mb-5">
   PRACTICE ASSESSMENTS
 </h1>
-        <Link href={"/tools/ai-assessments/history"}>
-          <span className="font-bold bg-blue-500 hover:bg-blue-700 transition cursor-pointer rounded-lg text-white px-4 py-2 text-center w-full md:w-auto">
-            My Assessment History
-          </span>
-        </Link>
+      <div className="w-full flex justify-end">
+  <Link href={"/tools/ai-assessments/history"}>
+    <span className="font-bold bg-blue-500 hover:bg-blue-700 transition cursor-pointer rounded-lg text-white px-4 py-2">
+      My Assessment History
+    </span>
+  </Link>
+</div>
       </div>
 
       {/* Greeting */}

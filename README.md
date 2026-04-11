@@ -89,15 +89,7 @@ This leads to inefficient preparation and slow skill improvement.
 
 ---
 
-### 💬 AI Mock Interview (Text-Based)
-- Simulated interview experience
-- AI-driven question flow
-- Post-interview evaluation:
-  - Technical score
-  - Communication score
-  - Improvement suggestions
 
----
 
 ## 🧰 Tech Stack
 
@@ -125,7 +117,6 @@ Used for:
 - Resumes
 - Quizzes
 - Roadmaps
-- Interview sessions
 - Progress tracking
 
 ---
@@ -146,7 +137,6 @@ Used for:
 - Chat responses
 - Resume enhancement
 - Quiz generation
-- Interview evaluation
 - Roadmap generation
 
 ---

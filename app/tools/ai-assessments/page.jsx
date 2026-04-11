@@ -44,7 +44,7 @@ const Page = async () => {
   if (!user) return null;
 
   return (
-  <div className="min-h-screen pt-28 px-15 text-white">
+  <div className="min-h-screen pt-28 px-4 md:px-10 text-white">
     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <Link href={"/"}>
           <Button variant="link" className="gap-2 pl-0 cursor-pointer">

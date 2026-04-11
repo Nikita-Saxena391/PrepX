@@ -166,7 +166,148 @@ style K fill:#b45309,color:#fff
 ```
 
 ---
+## Backend Component View
+```mermaid
+flowchart LR
 
+%% ========== INTEGRATIONS ==========
+subgraph Integrations
+A[Groq]
+B[Gemini]
+C[VAPI]
+D[Clerk Auth]
+end
+
+%% ========== CORE ==========
+subgraph Core
+E[API Routes]
+F[Server Actions]
+G[Middleware]
+end
+
+%% ========== DATA ==========
+subgraph Data
+H[(PostgreSQL / Prisma)]
+I[(MongoDB / Mongoose)]
+J[(Upstash Redis)]
+K[(Pinecone)]
+end
+
+%% ========== BACKGROUND ==========
+subgraph Background
+L[Inngest Cron]
+end
+
+%% ========== CONNECTIONS ==========
+A --> E
+B --> F
+C --> E
+
+D --> G
+
+E --> I
+E --> J
+E --> K
+
+F --> H
+F --> J
+
+L --> H
+L --> A
+
+%% ========== STYLING ==========
+style A fill:#ea580c,color:#fff
+style B fill:#f97316,color:#fff
+style C fill:#fb923c,color:#fff
+style D fill:#0ea5e9,color:#fff
+
+style E fill:#7c3aed,color:#fff
+style F fill:#6d28d9,color:#fff
+style G fill:#8b5cf6,color:#fff
+
+style H fill:#059669,color:#fff
+style I fill:#0d9488,color:#fff
+style J fill:#16a34a,color:#fff
+style K fill:#10b981,color:#fff
+
+style L fill:#b45309,color:#fff
+```
+## AI Processing Pipeline
+```mermaid
+flowchart LR
+
+%% ========== PIPELINE ==========
+A[User Prompt / Input] --> B[Context Builder]
+
+B --> C[(Pinecone Retrieve Top-K)]
+
+C --> D[Groq / Gemini LLM]
+
+D --> E[Structured / Streamed Output]
+
+E --> F[(Persist Layer)]
+
+%% ========== PERSIST ==========
+F --> G[(PostgreSQL / Prisma)]
+F --> H[(Upstash Redis Cache)]
+F --> I[(Pinecone Upsert)]
+
+%% ========== STYLING ==========
+style A fill:#1e3a8a,color:#fff
+style B fill:#f59e0b,color:#000
+
+style C fill:#0d9488,color:#fff
+style I fill:#10b981,color:#fff
+
+style D fill:#ea580c,color:#fff
+style E fill:#f97316,color:#fff
+
+style F fill:#065f46,color:#fff
+style G fill:#059669,color:#fff
+style H fill:#16a34a,color:#fff
+```
+## Redis Caching Layer      
+```mermaid
+flowchart LR
+
+%% ========== READ FLOW ==========
+A[Client Request] --> B{Cache Hit?}
+
+B -- Yes --> C[Return from Redis Cache]
+C --> D[Response]
+
+B -- No --> E[Fetch from PostgreSQL]
+E --> F[Store in Redis Cache]
+F --> D
+
+%% ========== WRITE FLOW ==========
+G[Write / Mutation Request] --> H[Update PostgreSQL]
+H --> I[Invalidate / Update Redis Cache]
+I --> J[Success Response]
+
+%% ========== REDIS ==========
+F --> K[(Upstash Redis)]
+C --> K
+I --> K
+
+%% ========== STYLING ==========
+style A fill:#1e3a8a,color:#fff
+style G fill:#1e3a8a,color:#fff
+
+style B fill:#9333ea,color:#fff
+
+style C fill:#16a34a,color:#fff
+style F fill:#22c55e,color:#fff
+style K fill:#15803d,color:#fff
+
+style E fill:#059669,color:#fff
+style H fill:#047857,color:#fff
+
+style I fill:#f59e0b,color:#000
+
+style D fill:#2563eb,color:#fff
+style J fill:#2563eb,color:#fff
+```
 ## 7. Core Pipelines
 
 Chat Pipeline:

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
 
 import { Button } from "./ui/button";
 import {
@@ -35,6 +36,15 @@ import {
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [toolkitOpen, setToolkitOpen] = useState(false);
+  const { user } = useUser();
+
+  const handleProtectedRoute = (path) => {
+    if (!user?.publicMetadata?.onboarded) {
+      window.location.href = "/onboarding";
+    } else {
+      window.location.href = path;
+    }
+  };
 
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50">
@@ -67,32 +77,46 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-  onClick={() => setToolkitOpen(!toolkitOpen)}
-  className="w-full flex items-center justify-between"
->
-  <span className="flex items-center gap-2">
-    <StarsIcon className="h-4 w-4" />
-    Career Toolkit
-  </span>
-  {toolkitOpen ? <ChevronUp /> : <ChevronDown />}
-</Button>
+                  onClick={() => setToolkitOpen(!toolkitOpen)}
+                  className="w-full flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <StarsIcon className="h-4 w-4" />
+                    Career Toolkit
+                  </span>
+                  {toolkitOpen ? <ChevronUp /> : <ChevronDown />}
+                </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/resume">Build Resume</Link>
+                <DropdownMenuItem>
+                  <button onClick={() => handleProtectedRoute("/resume")}>
+                    Build Resume
+                  </button>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/ai-cover-letter">Cover Letter</Link>
+
+                <DropdownMenuItem>
+                  <button onClick={() => handleProtectedRoute("/ai-cover-letter")}>
+                    Cover Letter
+                  </button>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/ai-chat-dashboard">AI Career Coach</Link>
+
+                <DropdownMenuItem>
+                  <button onClick={() => handleProtectedRoute("/ai-chat-dashboard")}>
+                    AI Career Coach
+                  </button>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/ai-roadmap-generator">AI Roadmap</Link>
+
+                <DropdownMenuItem>
+                  <button onClick={() => handleProtectedRoute("/ai-roadmap-generator")}>
+                    AI Roadmap
+                  </button>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/tools/ai-assessments">MCQ Practice</Link>
+
+                <DropdownMenuItem>
+                  <button onClick={() => handleProtectedRoute("/tools/ai-assessments")}>
+                    MCQ Practice
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -120,7 +144,6 @@ export default function Header() {
         <div className="md:hidden bg-white border-t p-4 space-y-3">
           <SignedIn>
             
-            {/* Industry Analytics (same color as desktop) */}
             <Link href="/dashboard">
               <Button className="w-full bg-gradient-to-r from-red-600 to-pink-600 text-white justify-start">
                 <LayoutDashboard className="h-4 w-4 mr-2" />
@@ -128,11 +151,10 @@ export default function Header() {
               </Button>
             </Link>
 
-            {/* Career Toolkit Collapsible */}
             <div>
               <button
                 onClick={() => setToolkitOpen(!toolkitOpen)}
-               className="w-full flex items-center justify-between px-3 py-2 border rounded-lg text-black bg-white"
+                className="w-full flex items-center justify-between px-3 py-2 border rounded-lg text-black bg-white"
               >
                 <span className="flex items-center gap-2">
                   <StarsIcon className="h-4 w-4" />
@@ -141,43 +163,54 @@ export default function Header() {
                 {toolkitOpen ? <ChevronUp /> : <ChevronDown />}
               </button>
 
-              {/* Dropdown Items */}
               {toolkitOpen && (
                 <div className="mt-2 ml-4 space-y-2">
-                  <Link href="/resume">
-                    <Button variant="outline" className="w-full justify-start">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Build Resume
-                    </Button>
-                  </Link>
 
-                  <Link href="/ai-cover-letter">
-                    <Button variant="outline" className="w-full justify-start">
-                      <PenBox className="h-4 w-4 mr-2" />
-                      Cover Letter
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleProtectedRoute("/resume")}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Build Resume
+                  </Button>
 
-                  <Link href="/ai-chat-dashboard">
-                    <Button variant="outline" className="w-full justify-start">
-                      <StarsIcon className="h-4 w-4 mr-2" />
-                      AI Career Coach
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleProtectedRoute("/ai-cover-letter")}
+                  >
+                    <PenBox className="h-4 w-4 mr-2" />
+                    Cover Letter
+                  </Button>
 
-                  <Link href="/ai-roadmap-generator">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Route className="h-4 w-4 mr-2" />
-                      AI Roadmap
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleProtectedRoute("/ai-chat-dashboard")}
+                  >
+                    <StarsIcon className="h-4 w-4 mr-2" />
+                    AI Career Coach
+                  </Button>
 
-                  <Link href="/tools/ai-assessments">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Users className="h-4 w-4 mr-2" />
-                      MCQ Practice
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleProtectedRoute("/ai-roadmap-generator")}
+                  >
+                    <Route className="h-4 w-4 mr-2" />
+                    AI Roadmap
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleProtectedRoute("/tools/ai-assessments")}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    MCQ Practice
+                  </Button>
+
                 </div>
               )}
             </div>

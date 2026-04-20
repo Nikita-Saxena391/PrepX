@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
-
+ import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import {
   PenBox,
@@ -38,7 +38,7 @@ export default function Header() {
   const [toolkitOpen, setToolkitOpen] = useState(false);
   const { user } = useUser();
 
-  import { useRouter } from "next/navigation";
+ 
 
 const router = useRouter();
 

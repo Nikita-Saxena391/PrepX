@@ -38,13 +38,13 @@ export default function Header() {
   const [toolkitOpen, setToolkitOpen] = useState(false);
   const { user } = useUser();
 
-  const handleProtectedRoute = (path) => {
-    if (!user?.publicMetadata?.onboarded) {
-      window.location.href = "/onboarding";
-    } else {
-      window.location.href = path;
-    }
-  };
+  import { useRouter } from "next/navigation";
+
+const router = useRouter();
+
+const handleProtectedRoute = (path) => {
+  router.push(path);
+};
 
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50">

@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import useFetch from "@/hooks/use-fetch";
 import { onboardingSchema } from "@/app/lib/schema";
 import { updateUser } from "@/actions/user";
 
@@ -33,7 +34,11 @@ const OnboardingForm = ({ industries }) => {
   const router = useRouter();
   const [selectedIndustry, setSelectedIndustry] = useState(null);
 
-  const [updateLoading, setUpdateLoading] = useState(false);
+  const {
+    loading: updateLoading,
+    fn: updateUserFn,
+    data: updateResult,
+  } = useFetch(updateUser);
 
   const {
     register,
@@ -47,28 +52,26 @@ const OnboardingForm = ({ industries }) => {
 
   const onSubmit = async (values) => {
     try {
-      setUpdateLoading(true);
-
       const formattedIndustry = `${values.industry}-${values.subIndustry
         .toLowerCase()
         .replace(/ /g, "-")}`;
 
-      const result = await updateUser({
+      await updateUserFn({
         ...values,
         industry: formattedIndustry,
       });
-
-      if (result?.success) {
-        toast.success("Profile completed successfully!");
-        router.push("/resume"); // ✅ redirect here
-      }
     } catch (error) {
       console.error("Onboarding error:", error);
-      toast.error("Something went wrong");
-    } finally {
-      setUpdateLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (updateResult?.success && !updateLoading) {
+      toast.success("Profile completed successfully!");
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [updateResult, updateLoading]);
 
   const watchIndustry = watch("industry");
 

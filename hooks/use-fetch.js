@@ -1,31 +1,30 @@
-// hooks/use-fetch.js
+"use server";
 
-import { useState } from "react";
-import { toast } from "sonner";
+import { db } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 
-const useFetch = (cb) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const updateUser = async (data) => {
+  try {
+    const { userId } = await auth();
 
-  const fn = async (...args) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await cb(...args);
-      setData(response);
-      setError(null);
-      return response;
-    } catch (error) {
-      setError(error);
-      toast.error(error.message);
-    } finally {
-      setLoading(false);
+    if (!userId) {
+      throw new Error("Unauthorized");
     }
-  };
 
-  return { data, loading, error, fn, setData };
+    await db.user.update({
+      where: { clerkId: userId },
+      data: {
+        industry: data.industry,
+        experience: data.experience,
+        skills: data.skills,
+        bio: data.bio,
+        isOnboarded: true, // 🔥 IMPORTANT
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("updateUser error:", error);
+    return { success: false, message: error.message };
+  }
 };
-
-export default useFetch;
